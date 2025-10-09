@@ -6,7 +6,7 @@ const authorizationAdmin = require('../middleware/authorizeMiddleware');
 const userRoutes = Router();
 
 // Usuarios
-userRoutes.get('/', verifyToken, authorizationAdmin, getAllUserHandler);
+userRoutes.get('/', /*verifyToken, authorizationAdmin ,*/ getAllUserHandler);
 
 userRoutes.get('/:id', getOneUserHandler);
 
