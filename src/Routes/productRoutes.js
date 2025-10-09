@@ -1,27 +1,17 @@
 const { Router } = require('express');
+const { createProductHandler, getAllProductHandler, getOneProductByIdHandler, updateProductHandler, deleteProductHandler } = require('../handlers/productsHandlers');
 
 const productRoutes = Router();
 
 // Productos
-productRoutes.get('/', (req, res) => {
-  res.send('Traer los productos');
-})
+productRoutes.get('/', getAllProductHandler);
 
-productRoutes.get('/:id', (req, res) => {
-  const { id } = req.params;
-  res.send(`Traeme el producto con id ${id}`);
-});
+productRoutes.get('/:id', getOneProductByIdHandler);
 
-productRoutes.post('/', (req, res) => {
-  res.send('Producto creado');
-});
+productRoutes.post('/', createProductHandler);
 
-productRoutes.put('/:id', (req, res) => {
-  res.send('Producto Actualizado');
-});
+productRoutes.put('/:id', updateProductHandler);
 
-productRoutes.delete('/:id', (req, res) => {
-  res.send('Producto eliminado');
-});
+productRoutes.delete('/:id', deleteProductHandler);
 
 module.exports = productRoutes;
