@@ -1,7 +1,6 @@
 const { registerController, loginController } = require("../controllers/authControllers");
 
 const Joi = require('joi');
-
 const userSchema = Joi.object({
   name: Joi.string()
     .min(3)
@@ -35,18 +34,21 @@ const registerHandler = async (req, res) => {
 
     const { name, username, email, password, phone, role } = req.body;
     const response = await registerController(name, username, email, password, phone, role);
+
     res.status(201).send(response);
 
   } catch (error) {
     res.status(404).send({ Error: error.message });
-  }
-}
+  };
+};
 
 const loginHandler = async (req, res) => {
+
   const { email, password } = req.body;
   const response = await loginController(email, password);
+
   res.status(200).send(response);
-}
+};
 
 module.exports = {
   registerHandler,
