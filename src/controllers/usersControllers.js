@@ -3,15 +3,19 @@ const bcrypt = require('bcrypt');
 // const { required } = require('joi');
 
 const createUserController = async (name, username, email, password, phone, role) => {
+  const userExist = await User.findOne({ email })
+  if (userExist) {
+    throw new Error("Usuario ya registrado");
+  };
+
   const hashPassword = await bcrypt.hash(password, 10);
 
   const newUser = new User({ name, username, email, password: hashPassword, phone, role });
 
   if (!name || !username || !email || !password || !phone) throw new Error(`Los datos están incompletos`);
-
   await newUser.save();
-  return newUser;
 
+  return newUser;
 };
 
 const getAllUsersController = async () => {
