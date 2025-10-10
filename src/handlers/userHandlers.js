@@ -72,18 +72,28 @@ const getOneUserHandler = async (req, res) => {
 };
 
 const updateUserHandler = async (req, res) => {
-  const { id } = req.params;
-  const { name, username, email, phone } = req.body;
-  const response = await updateUserController(id, name, username, email, phone);
+  try {
+    const { id } = req.params;
+    const { name, username, email, phone } = req.body;
+    const response = await updateUserController(id, name, username, email, phone);
 
-  res.status(200).send(response);
+    res.status(200).send(response);
+
+  } catch (error) {
+    res.status(404).send({ Error: error.message });
+  }
 };
 
 const deleteUserHandler = async (req, res) => {
-  const { id } = req.params;
-  const response = await deleteUserController(id);
+  try {
+    const { id } = req.params;
+    const response = await deleteUserController(id);
 
-  res.status(200).send(response);
+    res.status(200).send(response);
+
+  } catch (error) {
+    res.status(404).send({ Error: error.message });
+  };
 };
 
 module.exports = {
