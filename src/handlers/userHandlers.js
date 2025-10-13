@@ -1,44 +1,28 @@
 const { createUserController, getAllUsersController, getUsersByNameController, getOneUserByIdController, updateUserController, deleteUserController } = require("../controllers/usersControllers");
 
-const Joi = require('joi');
-const userSchema = Joi.object({
-  name: Joi.string()
-    .min(3)
-    .max(30)
-    .required(),
-  username: Joi.string()
-    .alphanum()
-    .min(3)
-    .max(30)
-    .required(),
-  email: Joi.string()
-    .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
-    .required(),
-  password: Joi.string()
-    .pattern(new RegExp(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,}$/))
-    .required(),
-  role: Joi.string()
-    .valid('user', 'admin'),
-  phone: Joi.string()
-    .pattern(/^[0-9]{7,15}$/)
-    .optional(),
-  isActive: Joi.boolean()
-    .default(true)
-});
+//Validación de Joi 
+const { userSchema } = require("../validations/userValidation.js");
 
 const createUserHandler = async (req, res) => {
   try {
 
     const { error } = userSchema.validate(req.body);
-    if (error) res.status(404).send(error.details[0].message);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
     const { name, username, email, password, phone, role } = req.body;
     const response = await createUserController(name, username, email, password, phone, role);
 
-    res.status(201).send(response);
+    return res.status(201).json(response);
 
   } catch (error) {
-    res.status(404).send({ Error: error.message });
+    if (error.message === "Usuario ya registrado") {
+      return res.status(409).json({ message: error.message });
+    }
+    // if (error.message === "Los datos están incompletos") {
+    //   return res.status(400).json({ message: error.message });
+    // }
+    console.error("Error en createUserHandler:", error);
+    return res.status(500).json({ message: "Internal server error" });
   };
 };
 
@@ -48,15 +32,22 @@ const getAllUserHandler = async (req, res) => {
     const { name } = req.query;
     if (name) {
       const response = await getUsersByNameController(name);
-      res.status(200).send(response);
+      return res.status(200).json(response);
 
     } else {
       const response = await getAllUsersController();
-      res.status(200).send(response);
+      return res.status(200).json(response);
     };
 
   } catch (error) {
-    res.status(404).send({ Error: error.message });
+    if (error.message === "No hay Usuarios") {
+      return res.status(404).json({ message: error.message });
+    }
+    if (error.message === "No se encontró al usuario") {
+      return res.status(404).json({ message: error.message });
+    }
+    console.error("Error en getAllUserHandler:", error);
+    return res.status(500).json({ message: "Internal server error" });
   };
 };
 
@@ -64,10 +55,14 @@ const getOneUserHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const response = await getOneUserByIdController(id);
-    res.status(200).send(response);
+    return res.status(200).json(response);
 
   } catch (error) {
-    res.status(404).send({ Error: error.message });
+    if (error.message === "No se encontró el usuario con ese ID") {
+      return res.status(404).json({ message: error.message });
+    }
+    console.error("Error en getOneUserHandler:", error);
+    return res.status(500).json({ message: "Internal server error" });
   };
 };
 
@@ -77,11 +72,15 @@ const updateUserHandler = async (req, res) => {
     const { name, username, email, phone } = req.body;
     const response = await updateUserController(id, name, username, email, phone);
 
-    res.status(200).send(response);
+    return res.status(200).json(response);
 
   } catch (error) {
-    res.status(404).send({ Error: error.message });
-  }
+    if (error.message === "Usuario no encontrado") {
+      return res.status(404).json({ message: error.message });
+    }
+    console.error("Error en updateUserHandler:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  };
 };
 
 const deleteUserHandler = async (req, res) => {
@@ -89,10 +88,14 @@ const deleteUserHandler = async (req, res) => {
     const { id } = req.params;
     const response = await deleteUserController(id);
 
-    res.status(200).send(response);
+    return res.status(200).json(response);
 
   } catch (error) {
-    res.status(404).send({ Error: error.message });
+    if (error.message === "Usuario no encontrado") {
+      return res.status(404).json({ message: error.message });
+    }
+    console.error("Error en deleteUserHandler:", error);
+    return res.status(500).json({ message: "Internal server error" });
   };
 };
 
