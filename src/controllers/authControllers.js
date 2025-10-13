@@ -13,7 +13,10 @@ const registerController = async (name, username, email, password, phone, role) 
   const newUser = new User({ name, username, email, password: hashPassword, phone, role });
 
   await newUser.save();
-  return newUser;
+  return {
+    message: "Usuario registrado exitosamente",
+    user: newUser
+  };
 };
 
 const loginController = async (email, password) => {
