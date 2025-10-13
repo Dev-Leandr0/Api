@@ -1,5 +1,5 @@
-const app = require('./src/app');
 require('dotenv').config({ quiet: true });
+const app = require('./src/app');
 const mongoose = require('./src/db/database');
 
 
