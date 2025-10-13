@@ -33,9 +33,8 @@ const loginController = async (email, password) => {
     'MySecretKey',
     { expiresIn: '1h' }
   )
-  console.log(token);
 
-  const { password: _, ...userWithoutPass } = user;
+  const { password: _, ...userWithoutPass } = user.toObject();
   return { message: "Inicio de sesion exitoso", user: userWithoutPass, token };
 };
 
