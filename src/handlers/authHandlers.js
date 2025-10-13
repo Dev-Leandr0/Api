@@ -30,24 +30,41 @@ const registerHandler = async (req, res) => {
   try {
 
     const { error } = userSchema.validate(req.body);
-    if (error) res.status(404).send(error.details[0].message);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
     const { name, username, email, password, phone, role } = req.body;
     const response = await registerController(name, username, email, password, phone, role);
 
-    res.status(201).send(response);
+    return res.status(201).json(response);
 
   } catch (error) {
-    res.status(404).send({ Error: error.message });
+    if (error.message === "Usuario ya registrado") {
+      return res.status(409).json({ message: error.message });
+    }
+    console.error("Error en registerHandler:", error);
+    return res.status(500).json({ message: "Internal server error" });
   };
 };
 
 const loginHandler = async (req, res) => {
 
-  const { email, password } = req.body;
-  const response = await loginController(email, password);
+  try {
+    const { email, password } = req.body;
+    const response = await loginController(email, password);
 
-  res.status(200).send(response);
+    return res.status(200).json(response);
+
+  } catch (error) {
+    if (error.message === "Usuario no registrado") {
+      return res.status(404).json({ message: error.message });
+    }
+    if (error.message === "Contraseña incorrecta") {
+      return res.status(401).json({ message: error.message });
+    }
+
+    console.error("Error en loginHandler:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 module.exports = {
