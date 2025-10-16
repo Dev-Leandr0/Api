@@ -1,42 +1,92 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../db/database');
+const bcrypt = require('bcrypt');
 
-const userSchema = new mongoose.Schema(
+const User = sequelize.define(
+  'user',
   {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
+    },
     name: {
-      type: String,
-      required: true
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: [2, 50],
+      },
     },
     username: {
-      type: String,
-      required: true
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        len: [3, 30],
+      },
+    },
+    gender: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isIn: [['male', 'female', 'other']],
+      },
     },
     email: {
-      type: String,
+      type: DataTypes.STRING,
+      allowNull: false,
       unique: true,
-      required: true
+      validate: {
+        isEmail: true,
+      },
     },
     password: {
-      type: String,
-      required: true
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: [8, 100],
+      },
     },
     phone: {
-      type: String
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        is: /^[0-9+\-() ]*$/i,
+      },
     },
     isActive: {
-      type: Boolean, default: true
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
     role: {
-      type: String,
-      enum: ['admin', 'user'],
-      default: 'user',
+      type: DataTypes.STRING,
+      defaultValue: 'user',
+      validate: {
+        isIn: [['user', 'admin']],
+      },
     },
-
   },
   {
-    versionKey: false,
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    indexes: [
+      { unique: true, fields: ['email'] },
+      { unique: true, fields: ['username'] },
+    ],
   }
 );
 
-const User = mongoose.model('User', userSchema);
+User.beforeCreate(async (user) => {
+  if (user.password) {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
+});
+
+User.beforeUpdate(async (user) => {
+  if (user.changed('password')) {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
+});
 
 module.exports = User;
