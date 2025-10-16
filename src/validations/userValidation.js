@@ -3,23 +3,49 @@ const userSchema = Joi.object({
   name: Joi.string()
     .min(3)
     .max(30)
-    .required(),
+    .required()
+    .messages({
+      'string.empty': 'El nombre es obligatorio.',
+      'string.min': 'El nombre debe tener al menos 3 caracteres.',
+      'string.max': 'El nombre no puede superar 30 caracteres.',
+      'any.required': 'El nombre es obligatorio.'
+    }),
   username: Joi.string()
     .alphanum()
     .min(3)
     .max(30)
+    .required()
+    .messages({
+      'string.empty': 'El nombre de usuario es obligatorio.',
+      'string.alphanum': 'El nombre de usuario solo puede contener letras y números.',
+      'string.min': 'El nombre de usuario debe tener al menos 3 caracteres.',
+      'string.max': 'El nombre de usuario no puede superar 30 caracteres.',
+      'any.required': 'El nombre de usuario es obligatorio.'
+    }),
+  gender: Joi.string()
+    .valid('male', 'female', 'other')
     .required(),
   email: Joi.string()
-    .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
+    .email({ minDomainSegments: 2, tlds: { allow: true } })//{ allow: ['com', 'net'] }
     .required(),
   password: Joi.string()
     .pattern(new RegExp(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,}$/))
-    .required(),
+    .required()
+    .messages({
+      'string.pattern.base': 'La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y caracteres especiales.',
+      'string.empty': 'La contraseña es obligatoria.',
+      'any.required': 'La contraseña es obligatoria.'
+    }),
   role: Joi.string()
-    .valid('user', 'admin'),
+    .valid('user', 'admin')
+    .default('user'),
   phone: Joi.string()
     .pattern(/^[0-9]{7,15}$/)
-    .optional(),
+    .allow('')
+    .optional()
+    .messages({
+      'string.pattern.base': 'El teléfono debe contener entre 7 y 15 dígitos.'
+    }),
   isActive: Joi.boolean()
     .default(true)
 });
