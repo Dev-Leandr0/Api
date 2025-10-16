@@ -2,17 +2,20 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 
-const registerController = async (name, username, email, password, phone, role) => {
+const registerController = async (userData) => {
 
-  const userExist = await User.findOne({ email })
+  const { name, username, gender, email, password, phone, isActive, role } = userData;
+  // if (!name || !username || !gender || !email || !password) throw new Error(`Los datos están incompletos`);
+
+  const userExist = await User.findOne({ where: { email } });
   if (userExist) {
     throw new Error("Usuario ya registrado");
   };
 
-  const hashPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ name, username, email, password: hashPassword, phone, role });
+  // const hashPassword = await bcrypt.hash(password, 10);
 
-  await newUser.save();
+  const newUser = await User.create({ name, username, gender, email, password, phone, isActive, role });
+
   return {
     message: "Usuario registrado exitosamente",
     user: newUser
@@ -21,7 +24,7 @@ const registerController = async (name, username, email, password, phone, role) 
 
 const loginController = async (email, password) => {
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ where: { email } });
   if (!user) {
     throw new Error("Usuario no registrado");
   };
@@ -33,11 +36,11 @@ const loginController = async (email, password) => {
 
   const token = jwt.sign(
     { id: user.id, role: user.role },
-    'MySecretKey',
-    { expiresIn: '1h' }
-  )
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN }
+  );
 
-  const { password: _, ...userWithoutPass } = user.toObject();
+  const { password: _, ...userWithoutPass } = user.get({ plain: true });
   return { message: "Inicio de sesion exitoso", user: userWithoutPass, token };
 };
 
