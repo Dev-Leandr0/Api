@@ -1,16 +1,16 @@
-const User = require('../models/User.js');
+const User = require('../models/User');
 const bcrypt = require('bcrypt');
 
-const createUserController = async (name, username, email, password, phone, role) => {
-  const userExist = await User.findOne({ email });
+const createUserController = async (userData) => {
+
+  const { name, username, gender, email, password, phone, isActive, role } = userData;
+  if (!name || !username || !gender || !email || !password) throw new Error(`Los datos están incompletos`);
+  const userExist = await User.findOne({ where: { email } });
   if (userExist) throw new Error("Usuario ya registrado");
 
-  const hashPassword = await bcrypt.hash(password, 10);
+  // const hashPassword = await bcrypt.hash(password, 10);
 
-  const newUser = new User({ name, username, email, password: hashPassword, phone, role });
-
-  if (!name || !username || !email || !password || !phone) throw new Error(`Los datos están incompletos`);
-  await newUser.save();
+  const newUser = await User.create({ name, username, gender, email, password, phone, isActive, role });
 
   return {
     message: "Usuario creado exitosamente",
@@ -19,53 +19,79 @@ const createUserController = async (name, username, email, password, phone, role
 };
 
 const getAllUsersController = async () => {
-  const users = await User.find();
-  if (!users.length) throw new Error("No hay Usuarios");
+
+  const users = await User.findAll();
+
+  if (!users.length) {
+    throw new Error("No hay Usuarios");
+  };
 
   return {
     message: "Usuarios encontrados",
-    users
+    users,
   };
 };
 
 const getUsersByNameController = async (name) => {
-  const userByName = await User.find({ name });
-  if (!userByName.length)
-    throw new Error(`No se encontró al usuario`);
+
+  const usersByName = await User.findAll({ where: { name } });
+
+  if (usersByName.length === 0) {
+    throw new Error(`No se encontró ningún usuario con ese nombre`);
+  };
+
   return {
     message: "Usuario encontrado",
-    user: userByName
+    usersByName: usersByName,
   };
 };
 
 const getOneUserByIdController = async (id) => {
-  const userById = await User.findById(id);
-  if (!userById)
+
+  const userById = await User.findByPk(id);
+
+  if (!userById) {
     throw new Error(`No se encontró el usuario con ese ID`);
+  }
+
   return {
     message: "Usuario encontrado",
     user: userById
   };
 };
 
-const updateUserController = async (id, name, username, email, phone) => {
-  const newUser = { name, username, email, phone };
-  const updateUser = await User.findByIdAndUpdate(id, newUser, { new: true });
+const updateUserController = async (id, userData) => {
+  const { name, username, gender, email, password, phone, isActive, role } = userData;
 
-  if (!updateUser)
-    throw new Error(`Usuario no encontrado`);
+  const userById = await User.findByPk(id);
+  if (!userById) throw new Error("Usuario no encontrado");
+
+  const updatedFields = {
+    name,
+    username,
+    gender,
+    email,
+    password,
+    phone,
+    isActive,
+    role,
+  };
+
+  const userUpdate = await userById.update(updatedFields);
 
   return {
     message: "Usuario actualizado",
-    user: updateUser
+    user: userUpdate,
   };
 };
 
 const deleteUserController = async (id) => {
-  const deleteUser = await User.findByIdAndDelete(id);
 
-  if (!deleteUser)
-    throw new Error(`Usuario no encontrado`);
+  const deleteUser = await User.findByPk(id);
+
+  if (!deleteUser) throw new Error("Usuario no encontrado");
+
+  await deleteUser.destroy();
 
   return {
     message: "Usuario eliminado",
