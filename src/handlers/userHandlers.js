@@ -9,8 +9,8 @@ const createUserHandler = async (req, res) => {
     const { error } = userSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
-    const { name, username, email, password, phone, role } = req.body;
-    const response = await createUserController(name, username, email, password, phone, role);
+    const { name, username, gender, email, password, phone, isActive, role } = req.body;
+    const response = await createUserController({ name, username, gender, email, password, phone, isActive, role });
 
     return res.status(201).json(response);
 
@@ -43,7 +43,7 @@ const getAllUserHandler = async (req, res) => {
     if (error.message === "No hay Usuarios") {
       return res.status(404).json({ message: error.message });
     }
-    if (error.message === "No se encontró al usuario") {
+    if (error.message === "No se encontró ningún usuario con ese nombre") {
       return res.status(404).json({ message: error.message });
     }
     console.error("Error en getAllUserHandler:", error);
@@ -69,8 +69,9 @@ const getOneUserHandler = async (req, res) => {
 const updateUserHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, username, email, phone } = req.body;
-    const response = await updateUserController(id, name, username, email, phone);
+    const { name, username, gender, email, password, phone, isActive, role } = req.body;
+
+    const response = await updateUserController(id, { name, username, gender, email, password, phone, isActive, role });
 
     return res.status(200).json(response);
 
