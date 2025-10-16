@@ -1,14 +1,15 @@
 const { registerController, loginController } = require("../controllers/authControllers");
+//Validación de Joi 
 const { userSchema } = require("../validations/userValidation.js");
 
 const registerHandler = async (req, res) => {
   try {
 
     const { error } = userSchema.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details[0].message });
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const { name, username, email, password, phone, role } = req.body;
-    const response = await registerController(name, username, email, password, phone, role);
+    const { name, username, gender, email, password, phone, isActive, role } = req.body;
+    const response = await registerController({ name, username, gender, email, password, phone, isActive, role });
 
     return res.status(201).json(response);
 
