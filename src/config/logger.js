@@ -3,7 +3,12 @@ const fs = require('fs');
 const path = require('path');
 
 const setupLogger = (app) => {
-  if (process.env.NODE_ENV === 'development') {
+
+  const logFormat = process.env.MORGAN_LOG;
+
+  console.log(`- Morgan Logger - usando formato: ${logFormat}\n`);
+
+  if (logFormat === 'dev') {
     app.use(morgan('dev'));
   } else {
 
@@ -11,15 +16,15 @@ const setupLogger = (app) => {
     const logDirectory = path.join(__dirname, '..', 'logs');
 
     if (!fs.existsSync(logDirectory)) {
-      fs.mkdirSync(logDirectory);
+      fs.mkdirSync(logDirectory, { recursive: true });
     }
 
     const accessLogStream = fs.createWriteStream(
       path.join(logDirectory, 'access.log'),
-      { flags: 'a' });
+      { flags: 'a' }
+    );
 
-    app.use(morgan('combined', { stream: accessLogStream }));
-
+    app.use(morgan(logFormat, { stream: accessLogStream }));
   }
 };
 
