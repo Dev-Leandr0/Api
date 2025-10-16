@@ -1,12 +1,17 @@
-const mongoose = require('mongoose');
 require('dotenv').config();
+const { Sequelize } = require('sequelize');
 
-const { MONGO_USER, MONGO_PASS, MONGO_CLUSTER, MONGO_DB } = process.env;
+const { POSTGRESQL_DB, POSTGRESQL_USER, POSTGRESQL_PASS } = process.env;
 
-const mongoUrl = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_CLUSTER}/${MONGO_DB}?retryWrites=true&w=majority`;
+const sequelize = new Sequelize(
+  process.env.POSTGRESQL_DB,
+  process.env.POSTGRESQL_USER,
+  process.env.POSTGRESQL_PASS,
+  {
+    host: 'localhost',
+    dialect: 'postgres',
+    logging: false
+  }
+);
 
-
-mongoose.connect(mongoUrl)
-  .then(() => console.log('✅ Conexión a MongoDB Atlas establecida'))
-  .catch((error) => console.error('❌ Error al conectar con MongoDB Atlas:', error));
-module.exports = mongoose;
+module.exports = { sequelize };
