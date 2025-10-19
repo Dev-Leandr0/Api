@@ -1,4 +1,5 @@
 const Joi = require('joi');
+
 const userSchema = Joi.object({
   name: Joi.string()
     .min(3)
@@ -24,10 +25,23 @@ const userSchema = Joi.object({
     }),
   gender: Joi.string()
     .valid('male', 'female', 'other')
-    .required(),
+    .required()
+    .messages({
+      'string.empty': 'El género es obligatorio.',
+      'any.required': 'El género es obligatorio.',
+      'any.only': 'El género debe ser "male", "female" o "other".'
+    }),
   email: Joi.string()
     .email({ minDomainSegments: 2, tlds: { allow: true } })//{ allow: ['com', 'net'] }
-    .required(),
+    .pattern(new RegExp('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'))
+    .required()
+    .messages({
+      'string.base': 'El email debe ser un texto',
+      'string.empty': 'El email no puede estar vacío',
+      'string.email': 'El email debe ser válido',
+      'string.pattern.base': 'El email no cumple con el formato permitido',
+      'any.required': 'El email es obligatorio'
+    }),
   password: Joi.string()
     .pattern(new RegExp(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\W_]).{8,}$/))
     .required()
@@ -44,6 +58,7 @@ const userSchema = Joi.object({
     .allow('')
     .optional()
     .messages({
+      'string.base': 'El teléfono debe ser un texto',
       'string.pattern.base': 'El teléfono debe contener entre 7 y 15 dígitos.'
     }),
   isActive: Joi.boolean()
