@@ -1,42 +1,48 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../db/database');
 
-const cartSchema = new mongoose.Schema(
+const Cart = sequelize.define(
+  'cart',
   {
-    product: {
-      type: String,
-      required: true
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
     },
     cantidad: {
-      type: String,
-      required: true
-    },
-    email: {
-      type: String,
-      unique: true,
-      required: true
-    },
-    password: {
-      type: String,
-      required: true
-    },
-    phone: {
-      type: String
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+      validate: {
+        min: 1,
+      },
     },
     isActive: {
-      type: Boolean, default: true
-    },
-    role: {
-      type: String,
-      enum: ['admin', 'user'],
-      default: 'user',
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
 
+    // Claves foráneas
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      onDelete: 'CASCADE',
+    },
+    productId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      onDelete: 'CASCADE',
+    },
   },
   {
-    versionKey: false,
+    timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ['userId', 'productId']
+      }
+    ]
   }
 );
-
-const Cart = mongoose.model('Cart', userSchema);
 
 module.exports = Cart;
