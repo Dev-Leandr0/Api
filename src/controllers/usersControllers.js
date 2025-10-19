@@ -4,11 +4,13 @@ const bcrypt = require('bcrypt');
 const createUserController = async (userData) => {
 
   const { name, username, gender, email, password, phone, isActive, role } = userData;
-  if (!name || !username || !gender || !email || !password) throw new Error(`Los datos están incompletos`);
-  const userExist = await User.findOne({ where: { email } });
-  if (userExist) throw new Error("Usuario ya registrado");
 
-  // const hashPassword = await bcrypt.hash(password, 10);
+  const userExist = await User.findOne({ where: { email } });
+  if (userExist) {
+    const err = new Error("Usuario ya registrado");
+    err.status = 409;
+    throw err;
+  };
 
   const newUser = await User.create({ name, username, gender, email, password, phone, isActive, role });
 
@@ -23,7 +25,9 @@ const getAllUsersController = async () => {
   const users = await User.findAll();
 
   if (!users.length) {
-    throw new Error("No hay Usuarios");
+    const err = new Error("No hay Usuarios");
+    err.status = 404;
+    throw err;
   };
 
   return {
@@ -37,7 +41,9 @@ const getUsersByNameController = async (name) => {
   const usersByName = await User.findAll({ where: { name } });
 
   if (usersByName.length === 0) {
-    throw new Error(`No se encontró ningún usuario con ese nombre`);
+    const err = new Error(`No se encontró ningún usuario con ese nombre`);
+    err.status = 404;
+    throw err;
   };
 
   return {
@@ -51,7 +57,9 @@ const getOneUserByIdController = async (id) => {
   const userById = await User.findByPk(id);
 
   if (!userById) {
-    throw new Error(`No se encontró el usuario con ese ID`);
+    const err = new Error(`No se encontró el usuario con ese ID`);
+    err.status = 404;
+    throw err;
   }
 
   return {
@@ -64,7 +72,11 @@ const updateUserController = async (id, userData) => {
   const { name, username, gender, email, password, phone, isActive, role } = userData;
 
   const userById = await User.findByPk(id);
-  if (!userById) throw new Error("Usuario no encontrado");
+  if (!userById) {
+    const err = new Error("Usuario no encontrado");
+    err.status = 404;
+    throw err;
+  };
 
   const updatedFields = {
     name,
@@ -89,7 +101,12 @@ const deleteUserController = async (id) => {
 
   const deleteUser = await User.findByPk(id);
 
-  if (!deleteUser) throw new Error("Usuario no encontrado");
+  if (!deleteUser) {
+
+    const err = new Error("Usuario no encontrado");
+    err.status = 404;
+    throw err;
+  }
 
   await deleteUser.destroy();
 

@@ -5,14 +5,13 @@ var jwt = require('jsonwebtoken');
 const registerController = async (userData) => {
 
   const { name, username, gender, email, password, phone, isActive, role } = userData;
-  // if (!name || !username || !gender || !email || !password) throw new Error(`Los datos están incompletos`);
 
   const userExist = await User.findOne({ where: { email } });
   if (userExist) {
-    throw new Error("Usuario ya registrado");
+    const err = new Error("Usuario ya registrado");
+    err.status = 409;
+    throw err;
   };
-
-  // const hashPassword = await bcrypt.hash(password, 10);
 
   const newUser = await User.create({ name, username, gender, email, password, phone, isActive, role });
 
@@ -26,13 +25,17 @@ const loginController = async (email, password) => {
 
   const user = await User.findOne({ where: { email } });
   if (!user) {
-    throw new Error("Usuario no registrado");
+    const err = new Error("Usuario no registrado");
+    err.status = 404;
+    throw err;
   };
 
   const passMatch = await bcrypt.compare(password, user.password);
   if (!passMatch) {
-    throw new Error("Contraseña incorrecta");
-  };
+    const err = new Error("Contraseña incorrecta");
+    err.status = 401;
+    throw err;
+  }
 
   const token = jwt.sign(
     { id: user.id, role: user.role },
@@ -41,7 +44,7 @@ const loginController = async (email, password) => {
   );
 
   const { password: _, ...userWithoutPass } = user.get({ plain: true });
-  return { message: "Inicio de sesion exitoso", user: userWithoutPass, token };
+  return { message: "Inicio de sesión exitoso", user: userWithoutPass, token };
 };
 
 module.exports = {
