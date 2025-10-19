@@ -8,6 +8,8 @@ const userRoutes = Router();
 // Usuarios
 userRoutes.get('/', /*verifyToken, authorizationAdmin ,*/ getAllUserHandler);
 
+userRoutes.get('/token', verifyToken, authorizationAdmin, getAllUserHandler);
+
 userRoutes.get('/:id', getOneUserHandler);
 
 userRoutes.post('/', createUserHandler);
