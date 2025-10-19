@@ -1,15 +1,26 @@
 var jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
+
   const token = req.headers.authorization;
 
   if (!token) {
-    return res.status(400).send('Token requerido');
+    const err = new Error('Token requerido');
+    err.status = 401;
+    return next(err);
   };
 
-  jwt.verify(token.split(' ')[1], 'MySecretKey', (err, decode) => {
+  if (!token.startsWith('Bearer ')) {
+    const err = new Error('Formato de token inválido');
+    err.status = 401;
+    return next(err);
+  }
+  const jwtToken = token.split(' ')[1];
+  jwt.verify(jwtToken, process.env.JWT_SECRET, (err, decode) => {
     if (err) {
-      return res.status(400).send('Token inválido');
+      const err = new Error('Token inválido o expirado');
+      err.status = 401;
+      return next(err);
     };
     req.user = decode;
     next();
