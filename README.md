@@ -104,7 +104,7 @@ JWT_EXPIRES_IN=1m
 
 1. **Clona el repositorio:**
    ```bash
-   git clone <URL_DEL_REPO>
+   git clone https://github.com/Dev-Leandr0/Api.git
    cd ecommerce
    ```
 
@@ -144,7 +144,6 @@ JWT_EXPIRES_IN=1m
 - **Joi** (validaciones)
 - **JWT** (autenticación)
 - **Morgan** (logs HTTP)
-- **Winston** (logger personalizado)
 
 ---
 
