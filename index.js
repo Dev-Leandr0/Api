@@ -1,8 +1,8 @@
 require('dotenv').config({ quiet: true });
 const app = require('./src/app');
 const { sequelize } = require('./src/db/database');
-const { User, Product, Cart } = require('./src/models/relations');
-console.log('- Modelos cargados:', Object.keys({ User, Product, Cart }));
+const { User, Product, Cart, Category } = require('./src/models/relations');
+console.log('- Modelos cargados:', Object.keys({ User, Product, Category, Cart }));
 
 const port = process.env.PORT || 3001;
 
