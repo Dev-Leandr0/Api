@@ -1,16 +1,18 @@
 const Product = require("../models/Product");
+const Category = require("../models/Category");
 
-const createProductController = async (name, description, price, stock, category, image) => {
-  const productExist = await Product.findOne({ name });
+const createProductController = async (productData) => {
+
+  const { name, description, price, stock, categoryId, image, isActive } = productData
+
+  const productExist = await Product.findOne({ where: { name } });
   if (productExist) {
-    throw new Error("Producto ya Registrado");
+    const err = new Error("Producto ya Registrado");
+    err.status = 409;
+    throw err;
   };
 
-  const newProduct = new Product({
-    name, description, price, stock, category, image
-  });
-
-  await newProduct.save();
+  const newProduct = await Product.create({ name, description, price, stock, categoryId, image, isActive });
 
   return {
     message: "Producto creado exitosamente",
@@ -18,34 +20,50 @@ const createProductController = async (name, description, price, stock, category
   };
 };
 
+// Todos
 const getAllProductController = async () => {
-  const products = await Product.find();
+
+  const products = await Product.findAll();
 
   if (!products.length) {
-    throw new Error(`No hay productos`);
+    const err = new Error("No hay Productos");
+    err.status = 404;
+    throw err;
   };
 
   return {
     message: "Productos encontrados",
-    products
+    products,
   };
 };
 
+// Nombre
 const getProductByNameController = async (name) => {
-  const productByName = await Product.find({ name });
-  if (!productByName.length) {
-    throw new Error(`No se encontró el producto`);
+
+  const productsByName = await Product.findAll({ where: { name } });
+
+  if (productsByName.length === 0) {
+    const err = new Error(`No se encontró ningún producto con ese nombre`);
+    err.status = 404;
+    throw err;
   };
+
   return {
-    message: "Productos encontrados",
-    product: productByName
+    message: "producto encontrado",
+    productsByName: productsByName,
   };
 };
 
+// Id
 const getOneProductByIdController = async (id) => {
-  const productById = await Product.findById(id);
-  if (!productById)
-    throw new Error(`No se encontró el producto con ese ID`);
+
+  const productById = await Product.findByPk(id);
+
+  if (!productById) {
+    const err = new Error(`No se encontró el producto con ese ID`);
+    err.status = 404;
+    throw err;
+  }
 
   return {
     message: "Usuario encontrado",
@@ -53,28 +71,70 @@ const getOneProductByIdController = async (id) => {
   };
 };
 
-const updateProductController = async (id, name, description, price, stock, category, image) => {
+// Categoría
+const getProductsByCategoryController = async (categoryId) => {
 
-  const newProduct = { name, description, price, stock, category, image };
-  const updateProduct = await Product.findByIdAndUpdate(id, newProduct, { new: true });
+  const products = await Product.findAll({
+    where: { categoryId },
+    include: [{ model: Category, as: 'category', attributes: ['id', 'name'] }],
+  });
 
-  if (!updateProduct) {
-    throw new Error("Producto no encontrado");
+  if (products.length === 0) {
+    const err = new Error("No hay productos en esta categoría");
+    err.status = 404;
+    throw err;
   }
 
   return {
-    message: "Producto actualizado exitosamente",
+    message: "Productos encontrados",
+    products,
+  };
+};
+
+const updateProductController = async (id, productData) => {
+
+  const { name, description, price, stock, categoryId, image, isActive } = productData;
+
+  const productById = await Product.findByPk(id);
+
+  if (!productById) {
+    const err = new Error("Producto no encontrado");
+    err.status = 404;
+    throw err;
+  }
+
+  const updatedFields = {
+    name,
+    description,
+    price,
+    stock,
+    category,
+    image,
+    isActive,
+  };
+
+  const updateProduct = await productById.update(updatedFields);
+
+  return {
+    message: "Producto actualizado",
     product: updateProduct
   };
 };
 
 const deleteProductController = async (id) => {
-  const deleteProduct = await Product.findByIdAndDelete(id);
-  if (!deleteProduct)
-    throw new Error(`Producto no encontrado`);
+
+  const deleteProduct = await Product.findByPk(id);
+
+  if (!deleteProduct) {
+    const err = new Error(`Producto no encontrado`);
+    err.status = 404;
+    throw err;
+  }
+
+  await deleteProduct.destroy();
 
   return {
-    message: "Producto eliminado exitosamente",
+    message: "Producto eliminado",
     product: deleteProduct
   };
 };
@@ -85,5 +145,6 @@ module.exports = {
   getProductByNameController,
   getOneProductByIdController,
   updateProductController,
-  deleteProductController
+  deleteProductController,
+  getProductsByCategoryController,
 }
