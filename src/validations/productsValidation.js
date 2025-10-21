@@ -2,20 +2,20 @@ const Joi = require('joi');
 
 const productSchema = Joi.object({
   name: Joi.string()
-    .min(3)
-    .max(100)
+    .min(2)
+    .max(50)
     .required()
     .messages({
       "string.empty": "El nombre es obligatorio",
-      "string.min": "El nombre debe tener al menos 3 caracteres",
-      "string.max": "El nombre no puede superar los 100 caracteres",
+      "string.min": "El nombre debe tener al menos 2 caracteres",
+      "string.max": "El nombre no puede superar los 50 caracteres",
     }),
 
   description: Joi.string()
-    .max(500)
+    .max(150)
     .allow("")
     .messages({
-      "string.max": "La descripción no puede superar los 500 caracteres",
+      "string.max": "La descripción no puede superar los 150 caracteres",
     }),
 
   price: Joi.number()
@@ -36,13 +36,17 @@ const productSchema = Joi.object({
       "number.min": "El stock no puede ser negativo",
     }),
 
-  category: Joi.string()
-    .max(50)
-    .allow("")
+  categoryId: Joi.number()
+    .integer()
+    .positive()
+    .required()
     .messages({
-      "string.max": "La categoría no puede superar los 50 caracteres",
+      'number.base': 'El categoryId debe ser un número',
+      'number.integer': 'El categoryId debe ser un número entero',
+      'number.positive': 'El categoryId debe ser mayor que 0',
+      'any.required': 'El categoryId es obligatorio'
     }),
-
+    
   image: Joi.string()
     .uri()
     .allow("")
@@ -50,7 +54,7 @@ const productSchema = Joi.object({
       "string.uri": "La imagen debe ser una URL válida",
     }),
 
-  active: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(true),
 });
 
 module.exports = { productSchema };
