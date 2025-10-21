@@ -12,26 +12,43 @@ const Product = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        len: [2, 50],
+        notEmpty: true,
+      },
     },
     description: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        len: [2, 150],
+        notEmpty: true,
+      },
     },
     price: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     stock: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      validate: {
+        min: 0,
+      },
     },
-    category: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    categoryId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'categories',
+        key: 'id'
+      }
     },
     image: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+        isUrl: true,
+      },
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -39,7 +56,9 @@ const Product = sequelize.define(
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   }
 );
 
