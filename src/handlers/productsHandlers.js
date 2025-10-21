@@ -1,98 +1,102 @@
-const { createProductController, getOneProductByIdController, updateProductController, deleteProductController, getAllProductController, getProductByNameController } = require('../controllers/productsControllers');
+const { createProductController, getOneProductByIdController, updateProductController, deleteProductController, getAllProductController, getProductByNameController, getProductsByCategoryController } = require('../controllers/productsControllers');
 
+//Validación de Joi 
 const { productSchema } = require("../validations/productsValidation");
 
-const createProductHandler = async (req, res) => {
+const createProductHandler = async (req, res, next) => {
 
   try {
-    const { error } = productSchema.validate(req.body);
-    if (error) res.status(404).send(error.details[0].message);
 
-    const { name, description, price, stock, category, image } = req.body;
-    const response = await createProductController(name, description, price, stock, category, image);
+    const { error } = productSchema.validate(req.body);
+    if (error) {
+      const err = new Error(error.details[0].message);
+      err.status = 409;
+      err.name = "Validation";
+      throw err;
+    }
+
+    const { name, description, price, stock, categoryId, image, isActive } = req.body;
+    const response = await createProductController({ name, description, price, stock, categoryId, image, isActive });
 
     return res.status(201).json(response);
 
-  } catch (error) {
-    if (error.message === "Producto ya Registrado") {
-      return res.status(409).json({ message: error.message });
-    }
-    console.error("Error en createProductHandler:", error);
-    return res.status(500).json({ message: "Internal server error" });
+  } catch (err) {
+    next(err);
   };
 };
 
-// Todos o por `Nombre`
-const getAllProductHandler = async (req, res) => {
+// Todos o por "Nombre"
+const getAllProductHandler = async (req, res, next) => {
   try {
+
     const { name } = req.query;
     if (name) {
       const response = await getProductByNameController(name);
       return res.status(200).json(response);
+
     } else {
       const response = await getAllProductController();
       return res.status(200).json(response);
     };
 
-  } catch (error) {
-    if (error.message === "No hay productos") {
-      return res.status(409).json({ message: error.message });
-    }
-    if (error.message === "No se encontró el producto") {
-      return res.status(409).json({ message: error.message });
-    }
-    console.error("Error en getAllProductHandler:", error);
-    return res.status(500).json({ message: "Internal server error" });
+  } catch (err) {
+    next(err);
   };
 };
 
-const getOneProductByIdHandler = async (req, res) => {
+// Por ID
+const getOneProductByIdHandler = async (req, res, next) => {
 
   try {
     const { id } = req.params;
     const response = await getOneProductByIdController(id);
     return res.status(200).json(response);
 
-  } catch (error) {
-    if (error.message === "No se encontró el producto con ese ID") {
-      return res.status(409).json({ message: error.message });
-    }
-    console.error("Error en getOneProductByIdHandler:", error);
-    return res.status(500).json({ message: "Internal server error" });
+  } catch (err) {
+    next(err);
   };
 };
 
-const updateProductHandler = async (req, res) => {
+// Por categoría
+const getProductsByCategoryHandler = async (req, res, next) => {
+
   try {
+    const { categoryId } = req.params;
+    const response = await getProductsByCategoryController(categoryId);
+    return res.status(200).json(response);
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateProductHandler = async (req, res, next) => {
+
+  try {
+
     const { id } = req.params;
-    const { name, description, price, stock, category, image } = req.body;
-    const response = await updateProductController(id, name, description, price, stock, category, image);
+    const { name, description, price, stock, categoryId, image, isActive } = req.body;
+
+    const response = await updateProductController(id, { name, description, price, stock, categoryId, image, isActive });
 
     return res.status(200).json(response);
 
-  } catch (error) {
-    if (error.message === "Producto no encontrado") {
-      return res.status(409).json({ message: error.message });
-    }
-    console.error("Error en updateProductHandler:", error);
-    return res.status(500).json({ message: "Internal server error" });
+  } catch (err) {
+    next(err);
   };
 };
 
-const deleteProductHandler = async (req, res) => {
+const deleteProductHandler = async (req, res, next) => {
 
   try {
     const { id } = req.params;
+
     const response = await deleteProductController(id);
 
     return res.status(200).json(response);
 
-  } catch (error) {
-    if (error.message === "Producto no encontrado") {
-      return res.status(409).json({ message: error.message });
-    }
-    console.error("Error en deleteProductHandler:", error);
-    return res.status(500).json({ message: "Internal server error" });
+  } catch (err) {
+    next(err);
   };
 };
 
@@ -101,5 +105,6 @@ module.exports = {
   getAllProductHandler,
   getOneProductByIdHandler,
   updateProductHandler,
-  deleteProductHandler
+  deleteProductHandler,
+  getProductsByCategoryHandler,
 }
