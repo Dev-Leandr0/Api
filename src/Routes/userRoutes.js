@@ -1,21 +1,30 @@
 const { Router } = require('express');
-const { getAllUserHandler, getOneUserHandler, createUserHandler, updateUserHandler, deleteUserHandler } = require("../handlers/userHandlers");
+const { createUserHandler, getAllUsersHandler, getUserByIdHandler, getUsersByNameHandler, getUsersByStatusHandler, updateUserHandler, deleteUserHandler, deleteSoftUserHandler } = require("../handlers/userHandlers");
+
 const verifyToken = require('../middleware/verifyToken');
 const authorizationAdmin = require('../middleware/authorizeMiddleware');
 
 const userRoutes = Router();
 
-// Usuarios
-userRoutes.get('/', /*verifyToken, authorizationAdmin ,*/ getAllUserHandler);
-
-userRoutes.get('/token', verifyToken, authorizationAdmin, getAllUserHandler);
-
-userRoutes.get('/:id', getOneUserHandler);
-
+/* ===== Crear ===== */
 userRoutes.post('/', createUserHandler);
 
-userRoutes.put('/:id', updateUserHandler);
+/* ===== Rutas Fijas ===== */
+userRoutes.get('/status', getUsersByStatusHandler);
+userRoutes.get('/name', getUsersByNameHandler);
+userRoutes.get('/token', verifyToken, authorizationAdmin, getAllUsersHandler);
 
+/* ===== Rutas Generales ===== */
+userRoutes.get('/', getAllUsersHandler);
+userRoutes.get('/:id', getUserByIdHandler);
+
+/* ===== Update ===== */
+userRoutes.put('/:id', updateUserHandler);
+// userRoutes.patch('/:id', updateUserHandler);
+
+/* ===== Delete ===== */
+userRoutes.delete('/soft/:id', deleteSoftUserHandler);
 userRoutes.delete('/:id', deleteUserHandler);
+
 
 module.exports = userRoutes;
