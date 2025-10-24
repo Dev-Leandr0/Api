@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db/database');
 
 const Category = sequelize.define(
-  'category',
+  'Category',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -13,11 +13,18 @@ const Category = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+      validate: {
+        notEmpty: true,
+        len: [2, 50],
+      },
     },
-  }, {
-  tableName: 'categories',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-});
+  },
+  {
+    tableName: 'categories',
+    timestamps: true,
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+  }
+);
 
 module.exports = Category;
