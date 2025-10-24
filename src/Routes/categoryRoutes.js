@@ -1,9 +1,14 @@
 const { Router } = require('express');
-const { getAllCategoriesHandler, getCategoryByIdHandler, createCategoryHandler, updateCategoryHandler, deleteCategoryHandler } = require('../handlers/categoryHandlers');
+const {
+  getAllCategoriesHandler,
+  getCategoryByIdHandler,
+  createCategoryHandler,
+  updateCategoryHandler,
+  deleteCategoryHandler
+} = require('../handlers/categoryHandlers');
 
 const categoryRoutes = Router();
 
-// Usuarios
 categoryRoutes.get('/', getAllCategoriesHandler);
 
 categoryRoutes.get('/:id', getCategoryByIdHandler);
