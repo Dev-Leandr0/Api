@@ -36,7 +36,9 @@ const Product = sequelize.define(
         min: 0,
       },
     },
-    categoryId: {
+
+    // Clave foránea
+    categoryId: { // Relación con Category.js
       type: DataTypes.INTEGER,
       references: {
         model: 'categories',
@@ -57,8 +59,8 @@ const Product = sequelize.define(
   },
   {
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
   }
 );
 
