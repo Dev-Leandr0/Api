@@ -1,8 +1,7 @@
-const { createUserController, getAllUsersController, getUsersByNameController, getOneUserByIdController, updateUserController, deleteUserController } = require("../controllers/usersControllers");
-
-//Validación de Joi 
+const { createUserController, getAllUsersController, getUserByIdController, getUsersByNameController, getUsersByStatusController, updateUserController, deleteUserController, deleteSoftUserController } = require("../controllers/usersControllers");
 const { userSchema } = require("../validations/userValidation.js");
 
+/* --- Crear --- */
 const createUserHandler = async (req, res, next) => {
   try {
 
@@ -24,28 +23,20 @@ const createUserHandler = async (req, res, next) => {
   };
 };
 
-const getAllUserHandler = async (req, res, next) => {
+/* --- Lectura --- */
+const getAllUsersHandler = async (req, res, next) => {
   try {
-
-    const { name } = req.query;
-    if (name) {
-      const response = await getUsersByNameController(name);
-      return res.status(200).json(response);
-
-    } else {
-      const response = await getAllUsersController();
-      return res.status(200).json(response);
-    };
-
+    const response = await getAllUsersController();
+    return res.status(200).json(response);
   } catch (err) {
     next(err);
-  };
+  }
 };
 
-const getOneUserHandler = async (req, res, next) => {
+const getUserByIdHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const response = await getOneUserByIdController(id);
+    const response = await getUserByIdController(id);
     return res.status(200).json(response);
 
   } catch (err) {
@@ -53,6 +44,34 @@ const getOneUserHandler = async (req, res, next) => {
   };
 };
 
+const getUsersByNameHandler = async (req, res, next) => {
+
+  try {
+    const { name } = req.query;
+    const response = await getUsersByNameController(name);
+    return res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+
+};
+
+/*--- Estados --- */
+const getUsersByStatusHandler = async (req, res, next) => {
+  try {
+
+    const { isActive } = req.query;
+
+    const response = await getUsersByStatusController(isActive);
+
+    return res.status(200).json(response);
+
+  } catch (err) {
+    next(err);
+  };
+};
+
+/*--- Update --- */
 const updateUserHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -67,6 +86,7 @@ const updateUserHandler = async (req, res, next) => {
   };
 };
 
+/* --- Delete --- */
 const deleteUserHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -79,10 +99,31 @@ const deleteUserHandler = async (req, res, next) => {
   };
 };
 
+const deleteSoftUserHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const response = await deleteSoftUserController(id);
+
+    return res.status(200).json(response);
+
+  } catch (err) {
+    next(err);
+  };
+};
+
+
 module.exports = {
-  getAllUserHandler,
-  getOneUserHandler,
+  // Crear
   createUserHandler,
+  //Lectura
+  getAllUsersHandler,
+  getUserByIdHandler,
+  getUsersByNameHandler,
+  //Estado
+  getUsersByStatusHandler,
+  // Update
   updateUserHandler,
+  // Delete
   deleteUserHandler,
+  deleteSoftUserHandler,
 };
