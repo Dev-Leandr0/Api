@@ -2,44 +2,32 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db/database');
 
 const Cart = sequelize.define(
-  'cart',
+  'Cart',
   {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
     },
-    cantidad: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 1,
-      validate: {
-        min: 1,
-      },
-    },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
 
     // Claves foráneas
-    userId: {
+
+    userId: { // Relación con Users id
       type: DataTypes.UUID,
       allowNull: false,
-      onDelete: 'CASCADE',
-    },
-    productId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      onDelete: 'CASCADE',
+      validate: {
+        isUUID: 4,
+      },
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     indexes: [
       {
         unique: true,
-        fields: ['userId', 'productId']
+        fields: ['userId']
       }
     ]
   }
