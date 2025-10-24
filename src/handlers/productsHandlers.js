@@ -1,12 +1,10 @@
 const { createProductController, getOneProductByIdController, updateProductController, deleteProductController, getAllProductController, getProductByNameController, getProductsByCategoryController } = require('../controllers/productsControllers');
-
-//Validación de Joi 
 const { productSchema } = require("../validations/productsValidation");
 
 const createProductHandler = async (req, res, next) => {
 
   try {
-
+    // Validación de datos de entrada con Joi
     const { error } = productSchema.validate(req.body);
     if (error) {
       const err = new Error(error.details[0].message);
@@ -25,7 +23,6 @@ const createProductHandler = async (req, res, next) => {
   };
 };
 
-// Todos o por "Nombre"
 const getAllProductHandler = async (req, res, next) => {
   try {
 
@@ -44,7 +41,6 @@ const getAllProductHandler = async (req, res, next) => {
   };
 };
 
-// Por ID
 const getOneProductByIdHandler = async (req, res, next) => {
 
   try {
@@ -57,7 +53,6 @@ const getOneProductByIdHandler = async (req, res, next) => {
   };
 };
 
-// Por categoría
 const getProductsByCategoryHandler = async (req, res, next) => {
 
   try {

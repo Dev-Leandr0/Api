@@ -1,12 +1,10 @@
 const { createCategoryController, getCategoryByNameController, getAllCategoriesController, getCategoryByIdController, updateCategoryController, deleteCategoryController } = require("../controllers/categoryControllers");
-
-//Validación de Joi 
 const categorySchema = require("../validations/categoryValidation");
-
 
 const createCategoryHandler = async (req, res, next) => {
   try {
 
+    // Validación de datos de entrada con Joi
     const { error } = categorySchema.validate(req.body);
     if (error) {
       const error = new Error(error.details[0].message);
@@ -15,6 +13,7 @@ const createCategoryHandler = async (req, res, next) => {
       throw error;
     }
 
+    // Delegación al controller que maneja la creación en DB
     const { name } = req.body;
     const response = await createCategoryController({ name });
     return res.status(201).json(response);
