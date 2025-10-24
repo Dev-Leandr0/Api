@@ -68,8 +68,8 @@ const User = sequelize.define(
   },
   {
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     indexes: [
       { unique: true, fields: ['email'] },
       { unique: true, fields: ['username'] },
