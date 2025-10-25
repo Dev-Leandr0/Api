@@ -300,6 +300,28 @@ const deleteSoftUserController = async (id) => {
   };
 };
 
+/* const restoreUserController = async (id) => {
+  const user = await User.findByPk(id);
+  if (!user) {
+    const err = new Error("Usuario no encontrado");
+    err.status = 404;
+    throw err;
+  }
+
+  if (user.isActive) {
+    const err = new Error("El usuario ya está activo");
+    err.status = 400;
+    throw err;
+  }
+
+  await user.update({ isActive: true });
+
+  return {
+    message: "Usuario restaurado exitosamente",
+    user,
+  };
+}; */
+
 module.exports = {
   // Crear
   createUserController,
@@ -321,4 +343,6 @@ module.exports = {
   // Delete
   deleteUserController, // eliminación permanente
   deleteSoftUserController, // eliminación lógica
+
+  // restoreUserController,
 }
