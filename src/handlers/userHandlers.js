@@ -1,20 +1,14 @@
-const { createUserController, getAllUsersController, getUserByIdController, getUsersByNameController, getUsersByStatusController, updateUserController, deleteUserController, deleteSoftUserController } = require("../controllers/usersControllers");
-const { userSchema } = require("../validations/userValidation.js");
+const { createUserController, getAllUsersController, getUserByIdController, getUsersByNameController, getUsersByEmailController, getUsersByStatusController, getUsersByRolController, updateUserController, updateUserStatusController, deleteUserController, deleteSoftUserController } = require("../controllers/usersControllers");
+const { validateUserData } = require('../validators/userValidator');
 
 /* --- Crear --- */
 const createUserHandler = async (req, res, next) => {
   try {
 
-    const { error } = userSchema.validate(req.body);
-    if (error) {
-      const error = new Error(error.details[0].message);
-      error.status = 409;
-      error.name = "Validation";
-      throw error;
-    }
+    // Validacion: Joi 
+    const validData = validateUserData(req.body);
 
-    const { name, username, gender, email, password, phone, isActive, role } = req.body;
-    const response = await createUserController({ name, username, gender, email, password, phone, isActive, role });
+    const response = await createUserController(validData);
 
     return res.status(201).json(response);
 
@@ -22,7 +16,6 @@ const createUserHandler = async (req, res, next) => {
     next(error);
   };
 };
-
 /* --- Lectura --- */
 const getAllUsersHandler = async (req, res, next) => {
   try {
@@ -32,7 +25,6 @@ const getAllUsersHandler = async (req, res, next) => {
     next(err);
   }
 };
-
 const getUserByIdHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -43,12 +35,33 @@ const getUserByIdHandler = async (req, res, next) => {
     next(err);
   };
 };
-
 const getUsersByNameHandler = async (req, res, next) => {
 
   try {
     const { name } = req.query;
     const response = await getUsersByNameController(name);
+    return res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+
+};
+const getUsersByEmailHandler = async (req, res, next) => {
+
+  try {
+    const { email } = req.query;
+    const response = await getUsersByEmailController(email);
+    return res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+
+};
+const getUsersByRoleHandler = async (req, res, next) => {
+
+  try {
+    const { role } = req.query;
+    const response = await getUsersByRolController(role);
     return res.status(200).json(response);
   } catch (err) {
     next(err);
@@ -74,10 +87,28 @@ const getUsersByStatusHandler = async (req, res, next) => {
 /*--- Update --- */
 const updateUserHandler = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { name, username, gender, email, password, phone, isActive, role } = req.body;
 
-    const response = await updateUserController(id, { name, username, gender, email, password, phone, isActive, role });
+    // Validacion: Joi 
+    const validData = validateUserData(req.body);
+
+    const { id } = req.params;
+
+    const response = await updateUserController(id, validData);
+
+    return res.status(200).json(response);
+
+  } catch (err) {
+    next(err);
+  };
+};
+const updateUserStatusHandler = async (req, res, next) => {
+  try {
+    // Validacion: Joi 
+    const validData = validateUserData(req.body);
+
+    const { id } = req.params;
+
+    const response = await updateUserStatusController(id, validData.isActive);
 
     return res.status(200).json(response);
 
@@ -98,7 +129,6 @@ const deleteUserHandler = async (req, res, next) => {
     next(err);
   };
 };
-
 const deleteSoftUserHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -115,14 +145,21 @@ const deleteSoftUserHandler = async (req, res, next) => {
 module.exports = {
   // Crear
   createUserHandler,
+
   //Lectura
   getAllUsersHandler,
   getUserByIdHandler,
   getUsersByNameHandler,
+  getUsersByEmailHandler,
+  getUsersByRoleHandler,
+
   //Estado
   getUsersByStatusHandler,
+
   // Update
   updateUserHandler,
+  updateUserStatusHandler,
+
   // Delete
   deleteUserHandler,
   deleteSoftUserHandler,
