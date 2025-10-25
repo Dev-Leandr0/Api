@@ -38,7 +38,8 @@ const createUserController = async (userData) => {
  * - getAllUsersController: recupera todos los usuarios registrados en la DB.  
  * - getUserByNameController: busca usuarios que coincidan con un nombre específico.  
  * - getUserByIdController: obtiene un usuario según su ID.  
- * - getUsersByStatusController: filtra usuarios por estado activo/inactivo (recibe booleano o string 'true'/'false').  
+ * - getUsersByStatusController: filtra usuarios por estado activo/inactivo (recibe 'true'/'false'). 
+ * - getUsersByRolController: obtiene todos los usuarios según su rol ('user' o 'admin'). 
  * 
  * En todos los casos:
  * - Si no se encuentran resultados, se lanza un error 404 (Not Found).  
@@ -67,7 +68,7 @@ const getUsersByNameController = async (name) => {
   const usersByName = await User.findAll({ where: { name } });
   // Validación: verificar si el usuario existe con ese nombre
   if (usersByName.length === 0) {
-    const err = new Error(`No se encontró ningún usuario con ese nombre`);
+    const err = new Error(`No se encontró ningún usuario con el nombre: '${name}'`);
     err.status = 404;
     throw err;
   };
@@ -78,13 +79,28 @@ const getUsersByNameController = async (name) => {
     usersByName: usersByName,
   };
 };
+const getUsersByEmailController = async (email) => {
 
+  const usersByEmail = await User.findAll({ where: { email } });
+  // Validación: verificar si el usuario existe con ese email
+  if (usersByEmail.length === 0) {
+    const err = new Error(`No se encontró ningún usuario con el email: '${email}'`);
+    err.status = 404;
+    throw err;
+  };
+
+  /* ===== Respuesta ===== */
+  return {
+    message: "Usuario encontrado",
+    usersByEmail: usersByEmail
+  };
+};
 const getUserByIdController = async (id) => {
 
   const userById = await User.findByPk(id);
   // Validación: existencia por id
   if (!userById) {
-    const err = new Error(`No se encontró el usuario con ese ID`);
+    const err = new Error(`No se encontró el usuario con el ID: '${id}'`);
     err.status = 404;
     throw err;
   }
@@ -128,14 +144,41 @@ const getUsersByStatusController = async (isActive) => {
   };
 };
 
+const getUsersByRolController = async (role) => {
+
+  // Validación: solo se admiten los roles definidos
+  if (role !== 'user' && role !== 'admin') {
+    const err = new Error("El parámetro 'role' debe ser 'user' o 'admin'");
+    err.status = 400;
+    throw err;
+  }
+
+  const usersByRole = await User.findAll({ where: { role } });
+
+  // Validación: verificar si el usuario existe con ese rol
+  if (usersByRole.length === 0) {
+    const err = new Error(`No hay Usuarios con rol '${role}'`);
+    err.status = 404;
+    throw err;
+  };
+
+  /* ===== Respuesta ===== */
+  return {
+    message: "Usuarios encontrados",
+    usersByRole: usersByRole,
+  };
+};
 
 /* =======================================================
- * UPDATE: Controlador de actualización de usuario
+ * UPDATE: Controladores de actualización de usuarios
  * =======================================================
- * - Busca la usuario en la DB usando el ID proporcionado
- * - Si no se encuentra, lanza un error 404 indicando que no existe
- * - Actualiza los campos proporcionados [userData]
- * - Devuelve un mensaje de éxito junto con el usuario actualizada.
+ * - updateUserController: actualiza todos los campos de un usuario existente.
+ * - updateUserStatusController: actualiza únicamente el estado activo/inactivo del usuario.
+ * 
+ * Ambos controladores:
+ * - Verifican la existencia del usuario por ID y lanzan error 404 si no existe.
+ * - Devuelven un mensaje de éxito con el usuario actualizado.
+ * - updateUserController aplica el hash de la contraseña automáticamente en el hook del modelo.
 */
 const updateUserController = async (id, userData) => {
 
@@ -170,6 +213,36 @@ const updateUserController = async (id, userData) => {
     user: userUpdate,
   };
 };
+const updateUserStatusController = async (id, isActive) => {
+
+  // validación de string
+  if (typeof isActive === 'string') {
+    if (isActive !== 'true' && isActive !== 'false') {
+      const err = new Error("El parámetro 'isActive' debe ser 'true' o 'false'");
+      err.status = 400;
+      throw err;
+    }
+    isActive = isActive === 'true'; // conversion de tipo
+  };
+
+  // Validación: existencia por id
+  const user = await User.findByPk(id);
+  if (!user) {
+    const err = new Error(`No se encontró el usuario con el ID: '${id}'`);
+    err.status = 404;
+    throw err;
+  }
+
+  user.isActive = isActive;
+  await user.save();
+
+  return {
+    message: "Usuario actualizado",
+    user
+  };
+
+};
+
 
 /* =======================================================
  * DELETE: Controladores de eliminación de usuarios
@@ -184,7 +257,7 @@ const deleteUserController = async (id) => {
   const deleteUser = await User.findByPk(id);
   // Validación: existencia del usuario por ID
   if (!deleteUser) {
-    const err = new Error("Usuario no encontrado");
+    const err = new Error(`Usuario con ID: '${id}', no encontrado`);
     err.status = 404;
     throw err;
   }
@@ -194,24 +267,23 @@ const deleteUserController = async (id) => {
 
   /* ===== Respuesta ===== */
   return {
-    message: "Usuario eliminado",
+    message: `Usuario  ID:'${id}' eliminado`,
     user: deleteUser
   };
 };
-
 const deleteSoftUserController = async (id) => {
 
   const user = await User.findByPk(id);
   // Validación: existencia del usuario por ID
   if (!user) {
-    const err = new Error("Usuario no encontrado");
+    const err = new Error(`Usuario con ID: '${id}', no encontrado`);
     err.status = 404;
     throw err;
   };
 
   // Validación: verificar si el usuario ya está inactivo
   if (!user.isActive) {
-    const err = new Error("El Usuario ya se elimino");
+    const err = new Error(`El Usuario con ID: '${id}'ya se ah eliminado`);
     err.status = 400;
     throw err;
   };
@@ -223,7 +295,7 @@ const deleteSoftUserController = async (id) => {
 
   /* ===== Respuesta ===== */
   return {
-    message: "Usuario eliminado (soft delete)",
+    message: `Usuario  ID:'${id}' eliminado (soft delete)`,
     user
   };
 };
@@ -236,12 +308,15 @@ module.exports = {
   getAllUsersController,
   getUserByIdController,
   getUsersByNameController,
+  getUsersByEmailController,
+  getUsersByRolController,
 
   // Lectura por Estados
   getUsersByStatusController,
 
   // Update
   updateUserController,
+  updateUserStatusController,
 
   // Delete
   deleteUserController, // eliminación permanente
